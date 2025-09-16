@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-hot-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Experience {
   id: string;
@@ -48,106 +49,188 @@ export interface CVData {
   };
 }
 
-export function useCVData(id: string) {
-  const [cv, setCv] = useState<CVData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+// Auto-save delay in milliseconds
+const AUTO_SAVE_DELAY = 2000;
 
-  // Auto-save functionality
-  const autoSave = useCallback(async (cvData: CVData) => {
+// Default CV template
+const DEFAULT_CV: CVData = {
+  id: '',
+  title: 'My CV',
+  content: {
+    personalInfo: {
+      fullName: '',
+      email: '',
+      phone: '',
+      location: '',
+      website: '',
+    },
+    summary: 'Experienced professional with a passion for creating impactful resumes.',
+    experiences: [{
+      id: uuidv4(),
+      jobTitle: 'Your Job Title',
+      company: 'Company Name',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: '',
+      isCurrent: true,
+      description: 'Describe your responsibilities and achievements here.'
+    }],
+    educations: [{
+      id: uuidv4(),
+      institution: 'University Name',
+      degree: 'Degree',
+      fieldOfStudy: 'Field of Study',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: '',
+      isCurrent: true,
+      description: 'Relevant coursework and achievements.'
+    }],
+    skills: [
+      { id: uuidv4(), name: 'Skill 1', category: 'programming', level: 3 },
+      { id: uuidv4(), name: 'Skill 2', category: 'frameworks', level: 2 },
+    ]
+  }
+};
+
+export const useCVData = (id: string) => {
+  const [cv, setCV] = useState<CVData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Save CV to localStorage
+  const saveCV = useCallback(async (cvData: CVData) => {
+    if (!cvData) return;
+    
+    setIsSaving(true);
     try {
+      // In a real app, you would save to a database here
       localStorage.setItem(`cv_${id}`, JSON.stringify(cvData));
       setLastSaved(new Date());
+      return true;
     } catch (err) {
-      console.error('Auto-save failed:', err);
+      console.error('Failed to save CV:', err);
+      toast.error('Failed to save CV');
+      return false;
+    } finally {
+      setIsSaving(false);
     }
   }, [id]);
 
-  // Debounced auto-save (saves 2 seconds after last change)
-  useEffect(() => {
-    if (!cv) return;
+  // Debounced auto-save
+  const queueSave = useCallback((cvData: CVData) => {
+    if (saveTimeoutRef.current !== null) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(async () => {
+      await saveCV(cvData);
+      saveTimeoutRef.current = null;
+    }, AUTO_SAVE_DELAY);
+  }, [saveCV]);
 
-    const timeoutId = setTimeout(() => {
-      autoSave(cv);
-    }, 2000);
+  // Update CV and trigger auto-save
+  const updateCV = useCallback((updates: Partial<CVData>) => {
+    setCV(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updates };
+      queueSave(updated);
+      return updated;
+    });
+  }, [queueSave]);
 
-    return () => clearTimeout(timeoutId);
-  }, [cv, autoSave]);
+  // Update a specific field in the CV with proper type safety
+  const updateField = useCallback(<T extends keyof CVData['content']>(
+    section: T,
+    value: CVData['content'][T]
+  ): void => {
+    setCV(prev => {
+      if (!prev) return null;
+      const updated = {
+        ...prev,
+        content: {
+          ...prev.content,
+          [section]: value
+        }
+      };
+      queueSave(updated);
+      return updated;
+    });
+  }, [queueSave]);
 
-  // Load CV data on mount
+  // Load CV from localStorage on mount
   useEffect(() => {
     const loadCV = async () => {
       try {
-        const defaultCV: CVData = {
-          id: id as string,
-          title: 'My CV',
-          content: {
-            personalInfo: {},
-            summary: '',
-            experiences: [],
-            educations: [],
-            skills: [],
-          },
-        };
-
+        setIsLoading(true);
+        
+        // In a real app, you would fetch from a database here
         const savedCV = localStorage.getItem(`cv_${id}`);
+        
         if (savedCV) {
-          setCv(JSON.parse(savedCV));
+          const parsedCV = JSON.parse(savedCV);
+          setCV(parsedCV);
           setLastSaved(new Date());
         } else {
-          setCv(defaultCV);
-          localStorage.setItem(`cv_${id}`, JSON.stringify(defaultCV));
+          // Create new CV with provided ID
+          const newCV = { ...DEFAULT_CV, id };
+          setCV(newCV);
+          await saveCV(newCV);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load CV');
-        console.error('Error loading CV:', err);
+        console.error('Failed to load CV:', err);
+        const error = err instanceof Error ? err : new Error('Failed to load CV');
+        setError(error);
+        toast.error(error.message);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadCV();
-  }, [id]);
 
-  // Update CV data
-  const updateCV = useCallback((updates: Partial<CVData>) => {
-    setCv(prev => prev ? { ...prev, ...updates } : null);
-  }, []);
+    // Cleanup timeout on unmount
+    return () => {
+      if (saveTimeoutRef.current !== null) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+    };
+  }, [id, saveCV]);
 
-  // Update specific field
-  const updateField = useCallback((field: string, value: any) => {
-    setCv(prev => prev ? { ...prev, [field]: value } : null);
-  }, []);
-
-  // Manual save with feedback
+  // Manual save function
   const manualSave = useCallback(async () => {
+    if (!cv) return false;
+    
+    const success = await saveCV(cv);
+    if (success) {
+      toast.success('CV saved successfully!');
+    }
+    return success;
+  }, [cv, saveCV]);
+
+  // Create a type-safe updateField function that can be used by components
+  const safeUpdateField = useCallback((field: string, value: any) => {
     if (!cv) return;
     
-    try {
-      localStorage.setItem(`cv_${id}`, JSON.stringify(cv));
-      setLastSaved(new Date());
-      toast.success('CV saved successfully! 💾', {
-        duration: 2000,
-        style: {
-          background: '#10B981',
-          color: '#fff',
-        },
-      });
-    } catch (err) {
-      toast.error('Failed to save CV');
-      console.error('Save error:', err);
+    // Type guard to ensure the field exists in CV content
+    if (field in cv.content) {
+      updateField(field as keyof CVData['content'], value);
+    } else {
+      console.warn(`Attempted to update non-existent field: ${field}`);
     }
-  }, [cv, id]);
+  }, [cv, updateField]);
 
   return {
     cv,
-    setCv,
-    updateCV,
-    updateField,
     isLoading,
     error,
     lastSaved,
-    manualSave,
+    isSaving,
+    updateCV,
+    updateField: safeUpdateField, // Expose the type-safe version
+    saveCV: (cvData: CVData) => saveCV(cvData),
+    manualSave
   };
 }

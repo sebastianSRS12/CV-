@@ -55,9 +55,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 dark:from-indigo-900 dark:via-purple-900 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Navigation */}
-      <nav className="backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-sm border-b border-gray-200/50 dark:border-gray-700/50">
+      <nav className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -111,12 +111,8 @@ export default function Home() {
             <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
               <div className="sm:text-center lg:text-left">
                 <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                  <span className="block xl:inline bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-blue-500">
-                    Create a professional
-                  </span>{' '}
-                  <span className="block xl:inline bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-cyan-500">
-                    CV in minutes
-                  </span>
+                  <span className="block xl:inline">Create a professional</span>{' '}
+                  <span className="block text-indigo-600 dark:text-indigo-400 xl:inline">CV in minutes</span>
                 </h1>
                 <p className="mt-3 text-base text-gray-500 dark:text-gray-300 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                   Stand out from the crowd with a beautifully designed, ATS-friendly resume that gets you noticed by employers.
@@ -125,7 +121,7 @@ export default function Home() {
                   <div className="rounded-md shadow">
                     <Link
                       href="/dashboard"
-                      className="w-full flex items-center justify-center px-8 py-3 border-2 border-transparent text-base font-medium rounded-full text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 md:py-4 md:text-lg md:px-10 transition-all duration-200 hover:scale-105 shadow-lg shadow-pink-500/20"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
                     >
                       Get started
                     </Link>
@@ -133,7 +129,7 @@ export default function Home() {
                   <div className="mt-3 sm:mt-0 sm:ml-3">
                     <button
                       onClick={handleGoogleSignIn}
-                      className="w-full flex items-center justify-center px-8 py-3 border-2 border-pink-500/20 text-base font-medium rounded-full text-pink-600 dark:text-white bg-white/80 dark:bg-pink-500/20 hover:bg-pink-50 dark:hover:bg-pink-500/30 md:py-4 md:text-lg md:px-10 transition-all duration-200 hover:scale-105"
+                      className="w-full flex items-center justify-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 md:py-4 md:text-lg md:px-10"
                     >
                       <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -155,8 +151,7 @@ export default function Home() {
       </div>
 
       {/* Features Section */}
-      <div className="py-12 relative">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent to-white/50 dark:to-gray-900/50"></div>
+      <div className="py-12 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:text-center">
             <h2 className="text-base text-indigo-600 dark:text-indigo-400 font-semibold tracking-wide uppercase">Features</h2>
@@ -187,7 +182,7 @@ export default function Home() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-pink-500 via-purple-600 to-blue-600">
+      <div className="bg-indigo-700 dark:bg-indigo-900">
         <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
             <span className="block">Ready to create your CV?</span>
@@ -198,7 +193,7 @@ export default function Home() {
           </p>
           <button
             onClick={handleGoogleSignIn}
-            className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border-2 border-white/20 text-base font-medium rounded-full text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-200 hover:scale-105 sm:w-auto"
+            className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 sm:w-auto"
           >
             <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

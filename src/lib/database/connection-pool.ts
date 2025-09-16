@@ -69,9 +69,9 @@ export const getConnectionMetrics = async () => {
   try {
     const metrics = await prisma.$metrics.json()
     return {
-      activeConnections: metrics.counters.find(c => c.key === 'prisma_client_queries_active')?.value || 0,
-      totalQueries: metrics.counters.find(c => c.key === 'prisma_client_queries_total')?.value || 0,
-      queryDuration: metrics.histograms.find(h => h.key === 'prisma_client_queries_duration_histogram')?.buckets || [],
+      activeConnections: metrics.counters.find((c: { key: string }) => c.key === 'prisma_client_queries_active')?.value || 0,
+      totalQueries: metrics.counters.find((c: { key: string }) => c.key === 'prisma_client_queries_total')?.value || 0,
+      queryDuration: metrics.histograms.find((h: { key: string }) => h.key === 'prisma_client_queries_duration_histogram')?.buckets || [],
     }
   } catch (error) {
     console.error('Failed to get connection metrics:', error)

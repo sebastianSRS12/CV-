@@ -13,10 +13,11 @@ import {
   Briefcase,
   GraduationCap,
   Code,
-  BarChart3
+  BarChart3,
+  Icon
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import { useCVData } from '@/hooks/useCVData';
+import { useCVData, type CVData } from '@/hooks/useCVData';
 import SaveIndicator from '@/components/ui/SaveIndicator';
 import PersonalInfoSection from '@/components/sections/PersonalInfoSection';
 import ExperienceSection from '@/components/sections/ExperienceSection';
@@ -29,8 +30,19 @@ export default function EditCVPage() {
   const router = useRouter();
   const { data: session } = useSession();
   
-  // Use the new custom hook for better state management
-  const { cv, updateField, isLoading, error, lastSaved, manualSave } = useCVData(id as string);
+  // Ensure id is a string (it could be an array if there are multiple dynamic segments)
+  const cvId = Array.isArray(id) ? id[0] : id || 'default-id';
+  
+  // Use the custom hook for CV data management with proper typing
+  const { 
+    cv, 
+    updateField, 
+    isLoading, 
+    error, 
+    lastSaved, 
+    manualSave,
+    isSaving 
+  } = useCVData(cvId);
   
   const [activeTab, setActiveTab] = useState('personal');
   const [isImproving, setIsImproving] = useState(false);
@@ -39,6 +51,85 @@ export default function EditCVPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisContext, setAnalysisContext] = useState<any>(null);
 
+  // Type-safe field updater with proper type casting
+  const updateCVField = (
+    field: string,
+    value: any
+  ) => {
+    // Type guard to ensure the field is a valid key of CVData['content']
+    const validFields: (keyof CVData['content'])[] = [
+      'personalInfo',
+      'summary',
+      'experiences',
+      'educations',
+      'skills'
+    ];
+    
+    if (validFields.includes(field as keyof CVData['content'])) {
+      updateField(field as keyof CVData['content'], value);
+    } else {
+      console.warn(`Attempted to update invalid field: ${field}`);
+    }
+  };
+  
+  // Wrapper function for section components to ensure type safety
+  const getSectionProps = () => {
+    if (!cv) {
+      throw new Error('CV data is not available');
+    }
+    return {
+      cv,
+      updateField: updateCVField
+    };
+  };
+  
+  // Tab configuration with proper typing
+  type TabConfig = {
+    id: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    section: string;
+    gradient: string;
+  };
+
+  const tabConfigs: TabConfig[] = [
+    { 
+      id: 'personal', 
+      label: 'Personal Info', 
+      icon: User, 
+      section: 'personalInfo',
+      gradient: 'from-blue-500 to-purple-600'
+    },
+    { 
+      id: 'experience', 
+      label: 'Experience', 
+      icon: Briefcase, 
+      section: 'experiences',
+      gradient: 'from-purple-500 to-pink-600'
+    },
+    { 
+      id: 'education', 
+      label: 'Education', 
+      icon: GraduationCap, 
+      section: 'educations',
+      gradient: 'from-pink-500 to-red-600'
+    },
+    { 
+      id: 'skills', 
+      label: 'Skills', 
+      icon: Code, 
+      section: 'skills',
+      gradient: 'from-red-500 to-orange-600'
+    },
+    { 
+      id: 'analysis', 
+      label: 'AI Analysis', 
+      icon: BarChart3, 
+      section: 'analysis',
+      gradient: 'from-orange-500 to-yellow-600'
+    }
+  ];
+
   const handleAIImprovement = async (section: string) => {
     if (!cv) return;
     
@@ -46,13 +137,8 @@ export default function EditCVPage() {
     try {
       const response = await fetch('/api/ai/improve', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          cvData: cv,
-          section: section
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cvData: cv, section }),
       });
 
       if (!response.ok) {
@@ -63,10 +149,7 @@ export default function EditCVPage() {
       const { improvement, section: improvedSection } = await response.json();
       
       if (improvedSection === 'summary') {
-        updateField('content', {
-          ...cv.content,
-          summary: improvement
-        });
+        updateCVField('summary', improvement);
         toast.success('Summary improved with AI! ✨');
       }
     } catch (error) {
@@ -124,14 +207,14 @@ export default function EditCVPage() {
           website: cv.content.personalInfo?.website || ''
         },
         summary: cv.content.summary || '',
-        experience: cv.content.experience.map((exp: any) => ({
+        experience: cv.content.experiences.map((exp: any) => ({
           title: exp.position || '',
           company: exp.company || '',
           startDate: exp.startDate || '',
           endDate: exp.endDate || '',
           description: exp.description || ''
         })),
-        education: cv.content.education.map((edu: any) => ({
+        education: cv.content.educations.map((edu: any) => ({
           degree: edu.degree || '',
           institution: edu.institution || '',
           startDate: edu.startDate || '',
@@ -193,7 +276,7 @@ export default function EditCVPage() {
       <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 flex items-center justify-center">
         <div className="text-center text-white">
           <h2 className="text-2xl font-bold mb-4">Error Loading CV</h2>
-          <p className="text-white/70 mb-6">{error}</p>
+          <p className="text-white/70 mb-6">{error instanceof Error ? error.message : 'An unknown error occurred'}</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
@@ -207,13 +290,7 @@ export default function EditCVPage() {
 
   if (!cv) return null;
 
-  const tabs = [
-    { id: 'personal', label: 'Personal Info', icon: User, gradient: 'from-cyan-500 to-blue-600' },
-    { id: 'experience', label: 'Experience', icon: Briefcase, gradient: 'from-purple-500 to-pink-600' },
-    { id: 'education', label: 'Education', icon: GraduationCap, gradient: 'from-green-500 to-teal-600' },
-    { id: 'skills', label: 'Skills', icon: Code, gradient: 'from-yellow-500 to-orange-600' },
-    { id: 'analysis', label: 'AI Analysis', icon: BarChart3, gradient: 'from-indigo-500 to-purple-600' }
-  ];
+  // Remove duplicate tabs definition and use tabConfigs instead
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 relative overflow-hidden">
@@ -250,79 +327,86 @@ export default function EditCVPage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 bg-black/20 backdrop-blur-md rounded-2xl p-6 border border-white/10"
         >
-          <div className="flex items-center space-x-4 mb-4 lg:mb-0">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/dashboard')}
-              className="flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-all backdrop-blur-sm border border-white/20"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back</span>
-            </motion.button>
-            
-            <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
-                {cv.title}
-              </h1>
-              <p className="text-white/60">Edit your professional CV</p>
-            </div>
-          </div>
-
           <div className="flex items-center space-x-4">
-            <SaveIndicator lastSaved={lastSaved} onManualSave={manualSave} />
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md hover:bg-white/10 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back
+            </button>
+          </div>
+          
+          <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+            <SaveIndicator 
+              lastSaved={lastSaved} 
+              onManualSave={manualSave} 
+            />
             
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               onClick={handleExportPDF}
               disabled={isExporting}
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-green-500/25 disabled:opacity-50"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all"
             >
-              <Download className="w-5 h-5" />
-              <span>{isExporting ? 'Exporting...' : 'Export PDF'}</span>
+              {isExporting ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="-ml-1 mr-2 h-4 w-4" />
+                  Export PDF
+                </>
+              )}
             </motion.button>
           </div>
         </motion.div>
 
-        {/* Navigation Tabs */}
-        <motion.nav
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex space-x-2 bg-black/20 backdrop-blur-md rounded-2xl p-3 border border-white/10 mb-8 overflow-x-auto"
-        >
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <motion.button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium text-sm transition-all relative overflow-hidden whitespace-nowrap ${activeTab === tab.id
-                    ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg border border-white/20`
-                    : 'text-white/70 hover:text-white hover:bg-white/10 border border-transparent'}`}
-              >
-                {activeTab === tab.id && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-xl"
-                  />
-                )}
-                <Icon className="w-5 h-5 relative z-10" />
-                <span className="relative z-10">{tab.label}</span>
-              </motion.button>
-            );
-          })}
+        {/* Tab Navigation */}
+        <motion.nav className="relative mb-8">
+          <div className="flex space-x-1 p-1 bg-black/20 backdrop-blur-md rounded-xl border border-white/10">
+            {tabConfigs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    activeTab === tab.id 
+                      ? 'text-white' 
+                      : 'text-white/70 hover:text-white/90 hover:bg-white/5'
+                  }`}
+                >
+                  {activeTab === tab.id && (
+                    <motion.span
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-lg"
+                      transition={{ type: 'spring', bounce: 0.3, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center">
+                    <Icon className="w-5 h-5 mr-2" />
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </motion.nav>
 
         {/* Content Sections */}
         <AnimatePresence mode="wait">
-          {activeTab === 'personal' && (
+          {activeTab === 'personal' && cv && (
             <PersonalInfoSection
               key="personal"
               cv={cv}
-              updateField={updateField}
+              updateField={updateCVField}
             />
           )}
 
