@@ -32,11 +32,11 @@ export default function SignInPage() {
             </button>
           </p>
         </div>
-        <div className="mt-8 space-y-6">
-          <SignInButton provider="google" />
+        <div className="mt-8 space-y-4">
+          <SignInButton provider="github" />
           
           {/* Demo Account Option */}
-          <div className="mt-6">
+          <div className="pt-4">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300 dark:border-gray-600" />

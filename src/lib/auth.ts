@@ -1,45 +1,55 @@
 import { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+// Determine the base URL for the environment
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  return 'http://localhost:3000';
+};
+
+const baseUrl = getBaseUrl();
+
 export const authOptions: NextAuthOptions = {
+  debug: process.env.NODE_ENV === 'development',
+
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "demo",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "demo",
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID || "",
+      clientSecret: process.env.GITHUB_SECRET || "",
     }),
     CredentialsProvider({
       name: "Demo Account",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "demo@example.com" },
-        name: { label: "Name", type: "text", placeholder: "Your Name" }
+        email: { label: "Email", type: "email" },
+        name: { label: "Name", type: "text" }
       },
       async authorize(credentials) {
-        // For demo purposes, allow any email/name combination
-        if (credentials?.email) {
+        if (process.env.NODE_ENV === 'development' && credentials?.email) {
           return {
             id: "demo-user",
             email: credentials.email,
             name: credentials.name || "Demo User",
-          }
+          };
         }
-        return null
+        return null;
       },
     }),
   ],
-  callbacks: {
-    session: async ({ session, token }) => {
-      if (session?.user) {
-        session.user.id = token.sub!;
-      }
-      return session;
-    },
-  },
+
   session: {
     strategy: "jwt",
   },
+
   pages: {
-    signIn: "/auth/signin",
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
