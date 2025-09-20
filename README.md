@@ -93,9 +93,9 @@ This project demonstrates advanced full-stack development skills and modern best
 - **"The responsive design works seamlessly across all devices"**
 
 ### Contact Information:
-📧 **Email**: [Your Email Here]  
-💼 **LinkedIn**: [Your LinkedIn Profile]  
-🐙 **GitHub**: [Your GitHub Profile]  
+📧 **Email**: 
+💼 **LinkedIn**:
+🐙 **GitHub**: 
 🌐 **Portfolio**: [Your Portfolio Website]
 
 ---
