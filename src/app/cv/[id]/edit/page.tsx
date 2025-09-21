@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -14,26 +14,50 @@ import {
   GraduationCap,
   Code,
   BarChart3,
-  Icon
+  Icon as LucideIcon,
+  Save
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useCVData, type CVData } from '@/hooks/useCVData';
-import SaveIndicator from '@/components/ui/SaveIndicator';
+import { debounce, type DebouncedFunc } from 'lodash';
+import { trackCVSave, trackPageView, trackPDFExport, trackAIAnalysis } from '@/lib/analytics';
+import { EditorLayout } from '@/components/editor/EditorLayout';
+import { AutoSaveIndicator } from '@/components/editor/AutoSaveIndicator';
 import PersonalInfoSection from '@/components/sections/PersonalInfoSection';
 import ExperienceSection from '@/components/sections/ExperienceSection';
 import EducationSection from '@/components/sections/EducationSection';
 import SkillsSection from '@/components/sections/SkillsSection';
 import CVAnalysisDashboard from '@/components/ui/CVAnalysisDashboard';
 
-export default function EditCVPage() {
+// Define types for AI analysis
+interface AIAnalysis {
+  overallScore: number;
+  sectionAnalyses: Record<string, any>;
+  recommendations: string[];
+  strengths?: string[];
+  weaknesses?: string[];
+}
+
+// Define tab types
+type TabType = 'personal' | 'experience' | 'education' | 'skills' | 'analysis';
+
+// Define analysis context type
+interface AnalysisContextType {
+  industry: string;
+  level: string;
+  targetRole: string;
+  [key: string]: any;
+}
+
+const EditCVPage = () => {
   const { id } = useParams();
   const router = useRouter();
   const { data: session } = useSession();
   
-  // Ensure id is a string (it could be an array if there are multiple dynamic segments)
+ 
   const cvId = Array.isArray(id) ? id[0] : id || 'default-id';
   
-  // Use the custom hook for CV data management with proper typing
+
   const { 
     cv, 
     updateField, 
@@ -44,12 +68,45 @@ export default function EditCVPage() {
     isSaving 
   } = useCVData(cvId);
   
-  const [activeTab, setActiveTab] = useState('personal');
-  const [isImproving, setIsImproving] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisContext, setAnalysisContext] = useState<any>(null);
+// Type guard for error handling
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  return 'An unknown error occurred';
+};
+  // State with proper typing
+  const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [isImproving, setIsImproving] = useState<boolean>(false);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | undefined>(undefined);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [analysisContext, setAnalysisContext] = useState<AnalysisContextType | undefined>(undefined);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(true);
+  const [arr, setArr] = useState<any[]>([]); // Generic array state as per request
+  
+  // Track page view on component mount
+  useEffect(() => {
+    trackPageView(`/cv/${cvId}/edit`);
+  }, [cvId]);
+  
+  // Auto-save functionality with debouncing
+  const debouncedSave = useCallback(
+    debounce(async () => {
+      if (autoSaveEnabled && !isSaving) {
+        manualSave();
+        trackCVSave(cvId, activeTab);
+      }
+    }, 2000), // 2 second debounce
+    [autoSaveEnabled, isSaving, cvId, activeTab, manualSave]
+  );
+  
+  // Trigger auto-save when CV data changes
+  useEffect(() => {
+    if (cv) {
+      debouncedSave();
+    }
+    return () => debouncedSave.cancel();
+  }, [cv, debouncedSave]);
 
   // Type-safe field updater with proper type casting
   const updateCVField = (
@@ -67,6 +124,11 @@ export default function EditCVPage() {
     
     if (validFields.includes(field as keyof CVData['content'])) {
       updateField(field as keyof CVData['content'], value);
+      
+      // Track field updates for analytics
+      if (field !== 'personalInfo') { // Don't track every keystroke in personal info
+        trackCVSave(cvId, field);
+      }
     } else {
       console.warn(`Attempted to update invalid field: ${field}`);
     }
@@ -85,7 +147,7 @@ export default function EditCVPage() {
   
   // Tab configuration with proper typing
   type TabConfig = {
-    id: string;
+    id: TabType;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     section: string;
@@ -244,66 +306,63 @@ export default function EditCVPage() {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `${cv.content.personalInfo?.fullName || 'CV'}.pdf`;
+      a.download = `${cv?.content?.personalInfo?.fullName || 'CV'}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-
-      toast.success('PDF exported successfully! 📄');
+      trackPDFExport(cvId);
+      toast.success('CV exported successfully!');
     } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Failed to export PDF. Please try again.');
+      console.error('Export failed:', error);
+      toast.error('Failed to export CV');
     } finally {
       setIsExporting(false);
     }
   };
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-purple-400 border-t-transparent rounded-full"
-        />
-      </div>
+      <EditorLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">
+          Error: {error ? getErrorMessage(error) : 'An unknown error occurred'}
+          </div>
+        </div>
+      </EditorLayout>
     );
   }
 
-  if (error) {
+  if (!cv) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl font-bold mb-4">Error Loading CV</h2>
-          <p className="text-white/70 mb-6">{error instanceof Error ? error.message : 'An unknown error occurred'}</p>
+      <EditorLayout>
+        <div className="p-8 text-center">
+          <div className="text-2xl font-semibold mb-4">CV Not Found</div>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">The requested CV could not be found or you don't have permission to view it.</p>
           <button
             onClick={() => router.push('/dashboard')}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             Back to Dashboard
           </button>
         </div>
-      </div>
+      </EditorLayout>
     );
   }
 
-  if (!cv) return null;
-
-  // Remove duplicate tabs definition and use tabConfigs instead
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className={`absolute w-64 h-64 rounded-full opacity-20 blur-3xl ${
-              i % 3 === 0 ? 'bg-pink-500' : i % 3 === 1 ? 'bg-cyan-500' : 'bg-yellow-500'
-            }`}
-            animate={{
-              x: [0, 100, 0],
+    <EditorLayout>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-pink-900 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className={`absolute w-64 h-64 rounded-full opacity-20 blur-3xl ${
+                i % 3 === 0 ? 'bg-pink-500' : i % 3 === 1 ? 'bg-cyan-500' : 'bg-yellow-500'
+              }`}
+              animate={{
+                x: [0, 100, 0],
               y: [0, -100, 0],
               scale: [1, 1.2, 1],
             }}
@@ -338,10 +397,16 @@ export default function EditCVPage() {
           </div>
           
           <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-            <SaveIndicator 
-              lastSaved={lastSaved} 
-              onManualSave={manualSave} 
-            />
+            <div className="flex items-center space-x-2">
+              <AutoSaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
+              <button
+                onClick={manualSave}
+                disabled={isSaving}
+                className="px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
             
             <motion.button
               onClick={handleExportPDF}
@@ -471,9 +536,15 @@ export default function EditCVPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
-      <Toaster position="bottom-right" />
-    </div>
+        <div className="relative z-10">
+          <Toaster position="bottom-right" />
+          <Toaster position="top-right" />
+        </div>
+        </div>
+      </div>
+    </EditorLayout>
   );
-}
+};
+
+export default EditCVPage;
