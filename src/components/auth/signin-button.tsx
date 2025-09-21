@@ -1,13 +1,14 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { FaGoogle, FaGithub } from 'react-icons/fa';
+import { FaGithub } from 'react-icons/fa';
 
 interface SignInButtonProps {
-  provider: 'google' | 'github' | string;
+  provider: 'github' | string;
+  className?: string;
 }
 
-export function SignInButton({ provider }: SignInButtonProps) {
+export function SignInButton({ provider, className = '' }: SignInButtonProps) {
   const handleSignIn = async () => {
     console.log(`Attempting to sign in with ${provider}`);
     try {
@@ -18,10 +19,8 @@ export function SignInButton({ provider }: SignInButtonProps) {
       
       if (result?.error) {
         console.error('Sign in error:', result.error);
-        // You can add a toast notification here if you want
         alert(`Failed to sign in with ${provider}: ${result.error}`);
       } else if (result?.url) {
-        // If we get a URL, redirect to it (handles OAuth flow)
         window.location.href = result.url;
       }
     } catch (error) {
@@ -31,17 +30,14 @@ export function SignInButton({ provider }: SignInButtonProps) {
   };
 
   const providerIcons: { [key: string]: React.ReactElement } = {
-    google: <FaGoogle className="w-5 h-5" />,
-    github: <FaGithub className="w-5 h-5" />,
+    github: <FaGithub className="w-6 h-6" />,
   };
 
   const providerNames: { [key: string]: string } = {
-    google: 'Google',
     github: 'GitHub',
   };
   
   const buttonColors: { [key: string]: string } = {
-    google: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
     github: 'bg-gray-800 hover:bg-gray-900 focus:ring-gray-500',
     default: 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500',
   };
@@ -49,15 +45,10 @@ export function SignInButton({ provider }: SignInButtonProps) {
   return (
     <button
       onClick={handleSignIn}
-      className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-        buttonColors[provider.toLowerCase()] || buttonColors.default
-      }`}
-      data-testid={`${provider.toLowerCase()}-signin-button`}
+      className={`w-full flex items-center justify-center px-8 py-4 border border-transparent text-lg font-semibold rounded-lg text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 ${buttonColors[provider] || buttonColors.default} focus:outline-none focus:ring-4 focus:ring-opacity-50 ${className}`}
     >
-      <span className="absolute left-0 inset-y-0 flex items-center pl-3" data-testid={`${provider.toLowerCase()}-icon`}>
-        {providerIcons[provider.toLowerCase()] || null}
-      </span>
-      Continue with {providerNames[provider.toLowerCase()] || provider}
+      <span className="mr-3">{providerIcons[provider] || null}</span>
+      Continue with {providerNames[provider] || provider}
     </button>
   );
 }
