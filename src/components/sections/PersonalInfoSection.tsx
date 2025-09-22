@@ -12,20 +12,14 @@ interface PersonalInfoSectionProps {
 
 export default function PersonalInfoSection({ cv, updateField }: PersonalInfoSectionProps) {
   const updatePersonalInfo = (field: string, value: string) => {
-    updateField('content', {
-      ...cv.content,
-      personalInfo: {
-        ...cv.content.personalInfo,
-        [field]: value,
-      },
+    updateField('personalInfo', {
+      ...cv.content.personalInfo,
+      [field]: value
     });
   };
 
   const updateSummary = (value: string) => {
-    updateField('content', {
-      ...cv.content,
-      summary: value,
-    });
+    updateField('summary', value);
   };
 
   return (

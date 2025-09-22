@@ -1,9 +1,11 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, MoveUp, MoveDown, Star, StarHalf, StarOff, GripVertical } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CVData, Skill } from '@/hooks/useCVData';
+
+type SkillCategory = 'programming' | 'frameworks' | 'tools' | 'languages' | 'soft';
 
 interface SkillsSectionProps {
   cv: CVData;
@@ -18,20 +20,70 @@ const skillLevels = [
   { value: 5, label: 'Expert' },
 ];
 
-const skillCategories = [
-  { id: 'programming', name: 'Programming Languages', icon: '💻' },
-  { id: 'frameworks', name: 'Frameworks & Libraries', icon: '📚' },
-  { id: 'tools', name: 'Tools & Technologies', icon: '🛠️' },
-  { id: 'languages', name: 'Languages', icon: '🌐' },
-  { id: 'soft', name: 'Soft Skills', icon: '🤝' },
+interface SkillCategoryType {
+  id: SkillCategory;
+  name: string;
+  icon: string;
+  placeholder: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+}
+
+const skillCategories: SkillCategoryType[] = [
+  { 
+    id: 'programming', 
+    name: 'Programming Languages', 
+    icon: '💻',
+    placeholder: 'e.g., JavaScript, Python, Java',
+    color: 'from-blue-400 to-indigo-500',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/30'
+  },
+  { 
+    id: 'frameworks', 
+    name: 'Frameworks & Libraries', 
+    icon: '📚',
+    placeholder: 'e.g., React, Node.js, Django',
+    color: 'from-purple-400 to-pink-500',
+    bgColor: 'bg-purple-500/10',
+    borderColor: 'border-purple-500/30'
+  },
+  { 
+    id: 'tools', 
+    name: 'Tools & Technologies', 
+    icon: '🛠️',
+    placeholder: 'e.g., Git, Docker, AWS',
+    color: 'from-amber-400 to-orange-500',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/30'
+  },
+  { 
+    id: 'languages', 
+    name: 'Languages', 
+    icon: '🌐',
+    placeholder: 'e.g., English, Spanish, French',
+    color: 'from-emerald-400 to-teal-500',
+    bgColor: 'bg-emerald-500/10',
+    borderColor: 'border-emerald-500/30'
+  },
+  { 
+    id: 'soft', 
+    name: 'Soft Skills', 
+    icon: '🤝',
+    placeholder: 'e.g., Leadership, Communication',
+    color: 'from-rose-400 to-pink-500',
+    bgColor: 'bg-rose-500/10',
+    borderColor: 'border-rose-500/30'
+  },
 ];
 
 export default function SkillsSection({ cv, updateField }: SkillsSectionProps) {
   const skills = cv.content.skills || [];
 
-  const addSkill = (category: string = 'programming') => {
+  const addSkill = (category: SkillCategory = 'programming') => {
     const newSkill: Skill = {
-      id: Date.now().toString(),
+      id: `skill_${Date.now()}`,
       name: '',
       category,
       level: 3, // Default to intermediate
@@ -41,9 +93,21 @@ export default function SkillsSection({ cv, updateField }: SkillsSectionProps) {
       ...cv.content,
       skills: [...skills, newSkill],
     });
+    
+    // Auto-focus the new skill input after a small delay
+    setTimeout(() => {
+      const input = document.getElementById(`skill-${newSkill.id}`);
+      if (input) input.focus();
+    }, 50);
   };
 
-  const updateSkill = (id: string, field: string, value: any) => {
+  const updateSkill = (id: string, field: 'name' | 'level', value: string | number) => {
+    // If the field is 'name', trim the value and prevent empty strings
+    if (field === 'name') {
+      value = String(value).trimStart();
+      if (value === '') return; // Don't update if empty
+    }
+    
     updateField('content', {
       ...cv.content,
       skills: skills.map((skill) =>
@@ -85,24 +149,34 @@ export default function SkillsSection({ cv, updateField }: SkillsSectionProps) {
     return skills.filter((skill) => skill.category === categoryId);
   };
 
-  const renderStars = (level: number) => {
+  const renderStars = (skill: Skill) => {
+    const level = skill.level || 3;
     return (
-      <div className="flex space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            onClick={() => updateSkill}
-            className="focus:outline-none"
-            aria-label={`Set skill level to ${star}`}
-          >
-            {star <= level ? (
-              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-            ) : (
-              <StarOff className="w-4 h-4 text-gray-500" />
-            )}
-          </button>
-        ))}
+      <div className="flex items-center">
+        <div className="flex space-x-1 mr-3">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                updateSkill(skill.id, 'level', star);
+              }}
+              className="focus:outline-none transition-transform hover:scale-125"
+              aria-label={`Set ${skill.name || 'this skill'} to ${star} ${star === 1 ? 'star' : 'stars'}`}
+              title={`${skillLevels[star - 1]?.label || ''}`}
+            >
+              {star <= level ? (
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+              ) : (
+                <Star className="w-5 h-5 text-gray-500/50" />
+              )}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-gray-400">
+          {skillLevels[level - 1]?.label || 'Intermediate'}
+        </span>
       </div>
     );
   };
@@ -113,137 +187,160 @@ export default function SkillsSection({ cv, updateField }: SkillsSectionProps) {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
-          🛠️ Skills & Expertise
-        </h3>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+            Skills & Expertise
+          </h2>
+          <p className="text-gray-400 mt-1">Showcase your technical and professional skills</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {skillCategories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => addSkill(category.id)}
+              className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all hover:scale-105 ${category.bgColor} hover:bg-opacity-30 border ${category.borderColor} text-white`}
+            >
+              <span>{category.icon}</span>
+              Add {category.name.split(' ')[0]}
+              <Plus className="w-4 h-4" />
+            </button>
+          ))}
+        </div>
       </div>
 
-      {skillCategories.map((category) => {
-        const categorySkills = getSkillsByCategory(category.id);
-        
-        return (
-          <div key={category.id} className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-semibold text-gray-200 flex items-center">
-                <span className="mr-2">{category.icon}</span>
-                {category.name}
-                <span className="ml-2 text-sm text-gray-400">
-                  ({categorySkills.length})
-                </span>
-              </h4>
-              <Button
-                onClick={() => addSkill(category.id)}
-                size="sm"
-                variant="ghost"
-                className="text-green-400 hover:bg-green-500/10"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add {category.name.split(' ')[0]}
-              </Button>
-            </div>
-
-            <AnimatePresence>
-              {categorySkills.length > 0 ? (
-                <div className="space-y-3">
-                  {categorySkills.map((skill, index) => (
-                    <motion.div
-                      key={skill.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, height: 0, padding: 0, margin: 0 }}
-                      className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-green-500/20 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 via-transparent to-emerald-500/5" />
-                      
-                      <div className="relative z-10">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <input
-                              type="text"
-                              value={skill.name}
-                              onChange={(e) => updateSkill(skill.id, 'name', e.target.value)}
-                              placeholder={`Add a ${category.name.split(' ')[0].toLowerCase()} skill`}
-                              className="w-full bg-transparent border-0 border-b border-transparent focus:border-green-400 focus:ring-0 text-white placeholder-gray-500 pb-1 text-base font-medium"
-                            />
-                            
-                            {category.id !== 'soft' && (
-                              <div className="mt-2">
-                                <div className="text-xs text-gray-400 mb-1">
-                                  Proficiency: {skillLevels[skill.level - 1]?.label || 'Not specified'}
-                                </div>
-                                <div className="flex items-center">
-                                  <div className="flex-1 pr-4">
-                                    <div className="flex space-x-1">
-                                      {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                          key={star}
-                                          type="button"
-                                          onClick={() => updateSkill(skill.id, 'level', star)}
-                                          className="focus:outline-none"
-                                          aria-label={`Set skill level to ${star}`}
-                                        >
-                                          {star <= (skill.level || 0) ? (
-                                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                          ) : (
-                                            <Star className="w-4 h-4 text-gray-600" />
-                                          )}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="flex space-x-1 ml-4">
-                            <button
-                              onClick={() => moveSkill(skills.findIndex(s => s.id === skill.id), 'up')}
-                              disabled={skills.findIndex(s => s.id === skill.id) === 0}
-                              className="p-1.5 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                              title="Move up"
-                            >
-                              <MoveUp className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => moveSkill(skills.findIndex(s => s.id === skill.id), 'down')}
-                              disabled={skills.findIndex(s => s.id === skill.id) === skills.length - 1}
-                              className="p-1.5 rounded-full hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                              title="Move down"
-                            >
-                              <MoveDown className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => removeSkill(skill.id)}
-                              className="p-1.5 rounded-full hover:bg-red-500/20 text-red-400"
-                              title="Remove"
+      <div className="grid grid-cols-1 gap-6">
+        {skillCategories.map((category) => {
+          const categorySkills = getSkillsByCategory(category.id);
+          
+          return (
+            <div key={category.id} className={`rounded-2xl overflow-hidden border ${category.borderColor} bg-gradient-to-br from-white/5 to-black/20 backdrop-blur-sm`}>
+              <div className={`p-5 border-b ${category.borderColor} bg-gradient-to-r ${category.color}/10`}>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white flex items-center">
+                    <span className="mr-3 text-xl">{category.icon}</span>
+                    {category.name}
+                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-white/10 text-white/80">
+                      {categorySkills.length} {categorySkills.length === 1 ? 'skill' : 'skills'}
+                    </span>
+                  </h3>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addSkill(category.id);
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-white/70 hover:text-white"
+                    title={`Add ${category.name}`}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              
+              <AnimatePresence>
+                {categorySkills.length > 0 ? (
+                  <div className="divide-y divide-white/5">
+                    {categorySkills.map((skill, index) => (
+                      <motion.div
+                        key={skill.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, height: 0, padding: 0, margin: 0, border: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="group relative hover:bg-white/2.5 transition-colors"
+                      >
+                        <div className="px-5 py-4">
+                          <div className="flex items-start">
+                            <button 
+                              className="p-1 -ml-1 rounded-md mr-2 opacity-0 group-hover:opacity-100 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeSkill(skill.id);
+                              }}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
+                            
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center">
+                                <input
+                                  id={`skill-${skill.id}`}
+                                  type="text"
+                                  value={skill.name}
+                                  onChange={(e) => updateSkill(skill.id, 'name', e.target.value)}
+                                  placeholder={category.placeholder}
+                                  className="w-full bg-transparent border-0 border-b border-transparent focus:border-white/30 focus:ring-0 text-white placeholder-gray-500 pb-1 text-base font-medium pr-2"
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      addSkill(category.id);
+                                    } else if (e.key === 'Backspace' && !skill.name && skills.length > 1) {
+                                      e.preventDefault();
+                                      removeSkill(skill.id);
+                                    }
+                                  }}
+                                />
+                                
+                                <div className="flex space-x-2 ml-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      moveSkill(skills.findIndex(s => s.id === skill.id), 'up');
+                                    }}
+                                    disabled={index === 0}
+                                    className="p-1 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-gray-400 hover:text-white"
+                                    title="Move up"
+                                  >
+                                    <MoveUp className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      moveSkill(skills.findIndex(s => s.id === skill.id), 'down');
+                                    }}
+                                    disabled={index === categorySkills.length - 1}
+                                    className="p-1 rounded-md hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed text-gray-400 hover:text-white"
+                                    title="Move down"
+                                  >
+                                    <MoveDown className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                              
+                              {category.id !== 'soft' && (
+                                <div className="mt-3 pl-0.5">
+                                  {renderStars(skill)}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 0.7, y: 0 }}
-                  className="text-center py-6 border-2 border-dashed border-green-500/30 rounded-xl hover:border-green-500/50 transition-colors cursor-pointer"
-                  onClick={() => addSkill(category.id)}
-                >
-                  <p className="text-gray-400">No {category.name.toLowerCase()} added yet</p>
-                  <p className="text-sm text-green-400 mt-1">
-                    Click to add your first {category.name.split(' ')[0].toLowerCase()} skill
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        );
-      })}
+                        
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="p-6 text-center"
+                  >
+                    <div className="text-gray-500 mb-3">No {category.name.toLowerCase()} added yet</div>
+                    <button
+                      onClick={() => addSkill(category.id)}
+                      className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all ${category.bgColor} hover:bg-opacity-30 border ${category.borderColor} text-white`}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add your first {category.name.split(' ')[0].toLowerCase()}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
     </motion.div>
   );
 }
