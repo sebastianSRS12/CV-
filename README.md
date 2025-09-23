@@ -71,16 +71,10 @@ This project demonstrates advanced full-stack development skills and modern best
 3. **Security**: Developed comprehensive security test suite covering 8+ attack vectors
 4. **UX/UI**: Created intuitive interface with smooth animations and responsive design
 
-## 🎥 How to Showcase This Project to Recruiters
 
-### Quick Demo Strategy (5 minutes):
-1. **Start with the live application** - Show the polished UI and smooth interactions
-2. **Demonstrate AI features** - Click "AI Improve" to show intelligent content suggestions
-3. **Show technical depth** - Briefly mention the 39 security tests and TypeScript implementation
-4. **Export a PDF** - Demonstrate the end-to-end functionality
-5. **Highlight problem-solving** - Explain how you built the AI fallback system
 
-### For Screen Sharing Interviews:
+Run
+
 - Run `npm run dev` and demo at `http://localhost:3000`
 - Keep the demo under 3 minutes for initial screening
 - Have the code open in your IDE to show technical implementation
