@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -14,15 +14,54 @@ import {
   GraduationCap,
   Code,
   BarChart3,
-  Icon as LucideIcon,
-  Save
+  Save,
+  Loader2,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  ChevronRight,
+  Plus,
+  Trash2,
+  Edit2,
+  X,
+  Check,
+  ExternalLink,
+  Copy,
+  Share2,
+  MoreVertical,
+  RefreshCw,
+  Home
 } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast, Toaster } from 'sonner';
 import { useCVData, type CVData } from '@/hooks/useCVData';
-import { debounce, type DebouncedFunc } from 'lodash';
+import { debounce } from 'lodash';
 import { trackCVSave, trackPageView, trackPDFExport, trackAIAnalysis } from '@/lib/analytics';
 import { EditorLayout } from '@/components/editor/EditorLayout';
 import { AutoSaveIndicator } from '@/components/editor/AutoSaveIndicator';
+import { 
+  Button, 
+  Input, 
+  Textarea, 
+  Label, 
+  Switch, 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardContent,
+  CardDescription,
+  CardFooter,
+  Tabs, 
+  TabList, 
+  Tab, 
+  TabPanels, 
+  TabPanel,
+  Separator,
+  Skeleton,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider
+} from '@/components/ui';
 import PersonalInfoSection from '@/components/sections/PersonalInfoSection';
 import ExperienceSection from '@/components/sections/ExperienceSection';
 import EducationSection from '@/components/sections/EducationSection';
@@ -49,31 +88,30 @@ interface AnalysisContextType {
   [key: string]: any;
 }
 
-const EditCVPage = () => {
-  const { id } = useParams();
-  const router = useRouter();
-  const { data: session } = useSession();
-  
- 
-  const cvId = Array.isArray(id) ? id[0] : id || 'default-id';
-  
-
-  const { 
-    cv, 
-    updateField, 
-    isLoading, 
-    error, 
-    lastSaved, 
-    manualSave,
-    isSaving 
-  } = useCVData(cvId);
-  
 // Type guard for error handling
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === 'string') return error;
   return 'An unknown error occurred';
 };
+
+const EditCVPage = () => {
+  const { id } = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  
+  const cvId = Array.isArray(id) ? id[0] : id || 'default-id';
+  
+  const { 
+    cv, 
+    updateField, 
+    isLoading, 
+    error: cvError,
+    lastSaved, 
+    manualSave,
+    isSaving 
+  } = useCVData(cvId);
+  
   // State with proper typing
   const [activeTab, setActiveTab] = useState<TabType>('personal');
   const [isImproving, setIsImproving] = useState<boolean>(false);
@@ -92,12 +130,17 @@ const getErrorMessage = (error: unknown): string => {
   // Auto-save functionality with debouncing
   const debouncedSave = useCallback(
     debounce(async () => {
-      if (autoSaveEnabled && !isSaving) {
-        manualSave();
-        trackCVSave(cvId, activeTab);
+      if (autoSaveEnabled && !isSaving && cv) {
+        try {
+          await manualSave();
+          trackCVSave(cvId, activeTab);
+        } catch (err) {
+          console.error('Error saving CV:', err);
+          toast.error('Failed to save changes. Please try again.');
+        }
       }
     }, 2000), // 2 second debounce
-    [autoSaveEnabled, isSaving, cvId, activeTab, manualSave]
+    [autoSaveEnabled, isSaving, cvId, activeTab, manualSave, cv]
   );
   
   // Trigger auto-save when CV data changes
@@ -105,9 +148,77 @@ const getErrorMessage = (error: unknown): string => {
     if (cv) {
       debouncedSave();
     }
-    return () => debouncedSave.cancel();
+    return () => {
+      debouncedSave.cancel();
+    };
   }, [cv, debouncedSave]);
+  
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Loading your CV...</p>
+        </div>
+      </div>
+    );
+  }
 
+  // Handle error state
+  if (cvError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center p-8 max-w-md">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Error Loading CV</h2>
+          <p className="text-gray-600 mb-6">
+            {getErrorMessage(cvError)}
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+            <Button 
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Handle no CV found state
+  if (!cv) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center p-8 max-w-md">
+          <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">CV Not Found</h2>
+          <p className="text-gray-600 mb-6">
+            The requested CV could not be found or you don't have permission to view it.
+          </p>
+          <Button 
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 mx-auto"
+          >
+            <Home className="h-4 w-4" />
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+  
   // Type-safe field updater with proper type casting
   const updateCVField = (
     field: string,
@@ -321,18 +432,6 @@ const getErrorMessage = (error: unknown): string => {
     }
   };
 
-  if (error) {
-    return (
-      <EditorLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-red-500">
-          Error: {error ? getErrorMessage(error) : 'An unknown error occurred'}
-          </div>
-        </div>
-      </EditorLayout>
-    );
-  }
-
   if (!cv) {
     return (
       <EditorLayout>
@@ -485,7 +584,7 @@ const getErrorMessage = (error: unknown): string => {
             >
               <ExperienceSection
                 cv={cv}
-                updateField={updateField}
+                updateField={updateCVField}
               />
             </motion.div>
           )}
@@ -500,7 +599,7 @@ const getErrorMessage = (error: unknown): string => {
             >
               <EducationSection
                 cv={cv}
-                updateField={updateField}
+                updateField={updateCVField}
               />
             </motion.div>
           )}
@@ -515,7 +614,7 @@ const getErrorMessage = (error: unknown): string => {
             >
               <SkillsSection
                 cv={cv}
-                updateField={updateField}
+                updateField={updateCVField}
               />
             </motion.div>
           )}

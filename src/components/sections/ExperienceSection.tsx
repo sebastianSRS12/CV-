@@ -14,6 +14,18 @@ interface ExperienceSectionProps {
 
 export default function ExperienceSection({ cv, updateField }: ExperienceSectionProps) {
   const experiences = cv.content.experiences || [];
+  
+  // Helper function to safely get date value
+  const getDateValue = (date: string | undefined): string => date || '';
+  
+  // Helper function to safely update experience fields
+  const updateExperienceField = (id: string, field: string, value: any) => {
+    updateField('experiences', 
+      experiences.map(exp => 
+        exp.id === id ? { ...exp, [field]: value } : exp
+      )
+    );
+  };
 
   const addExperience = () => {
     const newExperience: Experience = {
@@ -27,26 +39,15 @@ export default function ExperienceSection({ cv, updateField }: ExperienceSection
       description: '',
     };
 
-    updateField('content', {
-      ...cv.content,
-      experiences: [...experiences, newExperience],
-    });
+    updateField('experiences', [...experiences, newExperience]);
   };
 
   const updateExperience = (id: string, field: string, value: any) => {
-    updateField('content', {
-      ...cv.content,
-      experiences: experiences.map((exp) =>
-        exp.id === id ? { ...exp, [field]: value } : exp
-      ),
-    });
+    updateExperienceField(id, field, value);
   };
 
   const removeExperience = (id: string) => {
-    updateField('content', {
-      ...cv.content,
-      experiences: experiences.filter((exp) => exp.id !== id),
-    });
+    updateField('experiences', experiences.filter((exp) => exp.id !== id));
   };
 
   const moveExperience = (index: number, direction: 'up' | 'down') => {
@@ -65,10 +66,7 @@ export default function ExperienceSection({ cv, updateField }: ExperienceSection
       newExperiences[index],
     ];
 
-    updateField('content', {
-      ...cv.content,
-      experiences: newExperiences,
-    });
+    updateField('experiences', newExperiences);
   };
 
   return (
@@ -107,7 +105,7 @@ export default function ExperienceSection({ cv, updateField }: ExperienceSection
                 <div className="flex-1">
                   <FormInput
                     label="Job Title"
-                    value={exp.jobTitle}
+                    value={exp.jobTitle || ''}
                     onChange={(value) => updateExperience(exp.id, 'jobTitle', value)}
                     placeholder="Senior Software Developer"
                     className="text-xl font-semibold"
@@ -143,14 +141,15 @@ export default function ExperienceSection({ cv, updateField }: ExperienceSection
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormInput
                   label="Company"
-                  value={exp.company}
+                  value={exp.company || ''}
                   onChange={(value) => updateExperience(exp.id, 'company', value)}
                   placeholder="Acme Inc."
+                  required
                 />
                 
                 <FormInput
                   label="Location"
-                  value={exp.location}
+                  value={exp.location || ''}
                   onChange={(value) => updateExperience(exp.id, 'location', value)}
                   placeholder="San Francisco, CA"
                 />
@@ -158,20 +157,31 @@ export default function ExperienceSection({ cv, updateField }: ExperienceSection
                 <div className="flex space-x-4">
                   <FormInput
                     label="Start Date"
-                    type="month"
-                    value={exp.startDate}
+                    value={exp.startDate || ''}
                     onChange={(value) => updateExperience(exp.id, 'startDate', value)}
                     className="flex-1"
+                    inputType="date"
                   />
                   
-                  <FormInput
-                    label="End Date"
-                    type={exp.isCurrent ? 'text' : 'month'}
-                    value={exp.isCurrent ? 'Present' : exp.endDate}
-                    onChange={(value) => updateExperience(exp.id, 'endDate', value)}
-                    disabled={exp.isCurrent}
-                    className="flex-1"
-                  />
+                  <div className="flex-1">
+                    {exp.isCurrent ? (
+                      <FormInput
+                        label="End Date"
+                        value="Present"
+                        onChange={() => {}} // Empty handler since field is disabled
+                        disabled={true}
+                        className="flex-1"
+                      />
+                    ) : (
+                      <FormInput
+                        label="End Date"
+                        value={getDateValue(exp.endDate)}
+                        onChange={(value) => updateExperience(exp.id, 'endDate', value)}
+                        className="flex-1"
+                        inputType="date"
+                      />
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex items-end">
@@ -190,7 +200,7 @@ export default function ExperienceSection({ cv, updateField }: ExperienceSection
               <div>
                 <FormTextarea
                   label="Description"
-                  value={exp.description}
+                  value={exp.description || ''}
                   onChange={(value) => updateExperience(exp.id, 'description', value)}
                   placeholder="Describe your responsibilities and achievements in this role..."
                   className="min-h-[100px]"
