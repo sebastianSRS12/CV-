@@ -296,7 +296,7 @@ const EditCVPage = () => {
     },
     { 
       id: 'analysis', 
-      label: 'AI Analysis', 
+      label: 'Analysis', 
       icon: BarChart3, 
       section: 'analysis',
       gradient: 'from-orange-500 to-yellow-600'

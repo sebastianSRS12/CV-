@@ -1,6 +1,19 @@
 import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
+// Mock NextAuth
+jest.mock('next-auth', () => ({
+  getServerSession: jest.fn(),
+}));
+
+// Mock the auth route
+jest.mock('@/app/api/auth/[...nextauth]/route', () => ({
+  authOptions: {
+    providers: [],
+    callbacks: {},
+    pages: {},
+  },
+}));
 
 // Mock NextAuth
 jest.mock('next-auth', () => ({
@@ -19,7 +32,7 @@ describe('Authentication Security Tests', () => {
       const mockRequest = new NextRequest('http://localhost:3000/api/cv');
       
       // This would be tested in actual API route handlers
-      const session = await getServerSession(authOptions);
+      const session = await getServerSession({});
       expect(session).toBeNull();
     });
 
@@ -31,7 +44,7 @@ describe('Authentication Security Tests', () => {
       
       (getServerSession as jest.Mock).mockResolvedValue(mockSession);
       
-      const session = await getServerSession(authOptions);
+      const session = await getServerSession({});
       expect(session).toBeTruthy();
       expect(session.user.email).toBe('test@example.com');
     });
@@ -44,7 +57,7 @@ describe('Authentication Security Tests', () => {
       
       (getServerSession as jest.Mock).mockResolvedValue(expiredSession);
       
-      const session = await getServerSession(authOptions);
+      const session = await getServerSession({});
       // In real implementation, expired sessions should be handled
       expect(new Date(session.expires).getTime()).toBeLessThan(Date.now());
     });

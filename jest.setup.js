@@ -37,3 +37,9 @@ jest.mock('next/headers', () => ({
     set: jest.fn(),
   }),
 }));
+// Polyfill TextEncoder and TextDecoder for tests
+global.TextEncoder = require('util').TextEncoder;
+global.TextDecoder = require('util').TextDecoder;
+
+// Polyfill TextEncoder for tests
+global.TextEncoder = require('util').TextEncoder;

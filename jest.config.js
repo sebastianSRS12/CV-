@@ -7,17 +7,21 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
-  moduleDirectories: ['node_modules', '<rootDir>/'],
-  testEnvironment: 'jest-environment-jsdom',
-  // Add support for TypeScript
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
-  },
-  // Ignore cypress tests in jest
-  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/cypress/'],
+ // Add more setup options before each test is run
+ setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+ // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
+ moduleDirectories: ['node_modules', '<rootDir>/'],
+ testEnvironment: 'jest-environment-jsdom',
+ // Add support for TypeScript
+ transform: {
+   '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+ },
+ // Transform ES modules in node_modules
+ transformIgnorePatterns: [
+   'node_modules/(?!(jose|openid-client|@panva|next-auth|preact|@preact|@babel/runtime|cookie|uuid|oauth4webapi|asn1.js|whatwg-url|jsdom|dompurify)/)',
+ ],
+ // Ignore cypress tests in jest
+ testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/cypress/'],
   // Handle CSS imports (with CSS modules)
   // https://jestjs.io/docs/webpack#mocking-css-modules
   moduleNameMapper: {
@@ -28,6 +32,8 @@ const customJestConfig = {
     '^.+\\.(css|sass|scss)$': '<rootDir>/__mocks__/styleMock.js',
     // Handle image imports
     '^.+\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    '^next/server$': '<rootDir>/__mocks__/next-server.js',
+    '^next/server$': '<rootDir>/__mocks__/next-server.js',
   },
   // Reset mocks between tests
   resetMocks: true,

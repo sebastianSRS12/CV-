@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline'
 import { CVData } from '@/lib/pdf/pdf-generator'
+import { Button } from './button'
 
 interface ExportButtonProps {
   cvData?: CVData
@@ -47,7 +48,7 @@ export function ExportButton({ cvData, elementId = 'cv-preview', template = 'mod
         // For HTML export, use html2canvas directly
         const html2canvas = (await import('html2canvas')).default
         const jsPDF = (await import('jspdf')).jsPDF
-        
+
         const element = document.getElementById(elementId)
         if (!element) {
           throw new Error(`Element with ID '${elementId}' not found`)
@@ -89,13 +90,14 @@ export function ExportButton({ cvData, elementId = 'cv-preview', template = 'mod
   }
 
   return (
-    <button
+    <Button
       onClick={handleExport}
       disabled={isExporting}
-      className={`inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition-colors duration-200 ${className}`}
+      leftIcon={<DocumentArrowDownIcon className="w-4 h-4" />}
+      className={className}
+      aria-label="Export CV as PDF"
     >
-      <DocumentArrowDownIcon className="w-5 h-5" />
       {isExporting ? 'Exporting...' : 'Export PDF'}
-    </button>
+    </Button>
   )
 }
