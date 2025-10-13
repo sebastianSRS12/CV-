@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth';
 
 // Mock dependencies
 jest.mock('next-auth');
+// Mock jose library to avoid ES module parsing issues
+jest.mock('jose', () => ({
+  // Provide minimal mock for the parts used in the code
+  jwtVerify: jest.fn(),
+  decodeJwt: jest.fn(),
+  createRemoteJWKSet: jest.fn(),
+}));
 jest.mock('@/lib/prisma', () => ({
   prisma: {
     cv: {

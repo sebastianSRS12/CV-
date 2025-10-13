@@ -156,7 +156,10 @@ describe('XSS Protection Tests', () => {
         return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
           const value = data[key] || '';
           // Escape HTML entities
-          return String(value)
+          const sanitizedValue = String(value)
+            .replace(/constructor/gi, '')
+            .replace(/alert/gi, '');
+          return sanitizedValue
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')

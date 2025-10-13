@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, MoveUp, MoveDown, Star } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Star, Code, Layers, Wrench, Globe, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CVData, Skill } from '@/hooks/useCVData';
 
@@ -23,7 +23,7 @@ const skillLevels = [
 interface SkillCategoryType {
   id: SkillCategory;
   name: string;
-  icon: string;
+  icon: React.ReactNode;
   placeholder: string;
   color: string;
   bgColor: string;
@@ -34,7 +34,7 @@ const skillCategories: SkillCategoryType[] = [
   { 
     id: 'programming', 
     name: 'Programming Languages', 
-    icon: '💻',
+    icon: <Code className="w-5 h-5" />,
     placeholder: 'e.g., JavaScript, Python, Java',
     color: 'from-blue-400 to-indigo-500',
     bgColor: 'bg-blue-500/10',
@@ -43,7 +43,7 @@ const skillCategories: SkillCategoryType[] = [
   { 
     id: 'frameworks', 
     name: 'Frameworks & Libraries', 
-    icon: '📚',
+    icon: <Layers className="w-5 h-5" />,
     placeholder: 'e.g., React, Node.js, Django',
     color: 'from-purple-400 to-pink-500',
     bgColor: 'bg-purple-500/10',
@@ -52,7 +52,7 @@ const skillCategories: SkillCategoryType[] = [
   { 
     id: 'tools', 
     name: 'Tools & Technologies', 
-    icon: '🛠️',
+    icon: <Wrench className="w-5 h-5" />,
     placeholder: 'e.g., Git, Docker, AWS',
     color: 'from-amber-400 to-orange-500',
     bgColor: 'bg-amber-500/10',
@@ -61,7 +61,7 @@ const skillCategories: SkillCategoryType[] = [
   { 
     id: 'languages', 
     name: 'Languages', 
-    icon: '🌐',
+    icon: <Globe className="w-5 h-5" />,
     placeholder: 'e.g., English, Spanish, French',
     color: 'from-emerald-400 to-teal-500',
     bgColor: 'bg-emerald-500/10',
@@ -70,7 +70,7 @@ const skillCategories: SkillCategoryType[] = [
   { 
     id: 'soft', 
     name: 'Soft Skills', 
-    icon: '🤝',
+    icon: <Users className="w-5 h-5" />,
     placeholder: 'e.g., Leadership, Communication',
     color: 'from-rose-400 to-pink-500',
     bgColor: 'bg-rose-500/10',
@@ -199,9 +199,9 @@ export default function SkillsSection({ cv, updateField }: SkillsSectionProps) {
             <button
               key={category.id}
               onClick={() => addSkill(category.id)}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all hover:scale-105 ${category.bgColor} hover:bg-opacity-30 border ${category.borderColor} text-white`}
+              className="px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all hover:scale-105 bg-gray-200 hover:bg-gray-300 border border-gray-300 text-gray-800"
             >
-              <span>{category.icon}</span>
+              {category.icon}
               Add {category.name.split(' ')[0]}
               <Plus className="w-4 h-4" />
             </button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, MoveUp, MoveDown, GraduationCap } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, GraduationCap, Building2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FormInput from '@/components/forms/FormInput';
 import FormTextarea from '@/components/forms/FormTextarea';
@@ -83,7 +83,7 @@ export default function EducationSection({ cv, updateField }: EducationSectionPr
         </h3>
         <Button
           onClick={addEducation}
-          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add Education
@@ -146,7 +146,7 @@ export default function EducationSection({ cv, updateField }: EducationSectionPr
                   value={edu.institution}
                   onChange={(value) => updateEducation(edu.id, 'institution', value)}
                   placeholder="Stanford University"
-                  icon="🏛️"
+                  
                 />
                 
                 <FormInput
@@ -154,7 +154,7 @@ export default function EducationSection({ cv, updateField }: EducationSectionPr
                   value={edu.fieldOfStudy}
                   onChange={(value) => updateEducation(edu.id, 'fieldOfStudy', value)}
                   placeholder="Computer Science"
-                  icon="📚"
+                  
                 />
                 
                 <div className="flex space-x-4">

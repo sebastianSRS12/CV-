@@ -1,4 +1,6 @@
 // AI-powered CV analysis and improvement engine
+import { Language } from './language-utils';
+
 export interface CVAnalysis {
   score: number;
   strengths: string[];
@@ -14,12 +16,13 @@ export interface CVSection {
     industry?: string;
     level?: 'entry' | 'mid' | 'senior' | 'executive';
     targetRole?: string;
+    language?: Language;
   };
 }
 
 export class CVAnalyzer {
   // Keywords and patterns for different industries and roles
-  private static readonly INDUSTRY_KEYWORDS = {
+  private static readonly INDUSTRY_KEYWORDS_EN = {
     tech: ['javascript', 'python', 'react', 'node.js', 'aws', 'docker', 'kubernetes', 'api', 'database', 'agile', 'scrum'],
     marketing: ['seo', 'sem', 'analytics', 'campaign', 'conversion', 'roi', 'brand', 'social media', 'content', 'lead generation'],
     finance: ['financial analysis', 'budgeting', 'forecasting', 'excel', 'sql', 'risk management', 'compliance', 'audit'],
@@ -27,19 +30,100 @@ export class CVAnalyzer {
     sales: ['crm', 'lead generation', 'pipeline', 'quota', 'revenue', 'client relationship', 'negotiation', 'closing']
   };
 
-  private static readonly POWER_WORDS = [
+  private static readonly INDUSTRY_KEYWORDS_ES = {
+    tech: ['javascript', 'python', 'react', 'node.js', 'aws', 'docker', 'kubernetes', 'api', 'base de datos', 'ágil', 'scrum'],
+    marketing: ['seo', 'sem', 'analítica', 'campaña', 'conversión', 'roi', 'marca', 'redes sociales', 'contenido', 'generación de leads'],
+    finance: ['análisis financiero', 'presupuestación', 'pronóstico', 'excel', 'sql', 'gestión de riesgos', 'cumplimiento', 'auditoría'],
+    healthcare: ['cuidado del paciente', 'médico', 'clínico', 'hipaa', 'emr', 'salud', 'diagnóstico', 'tratamiento'],
+    sales: ['crm', 'generación de leads', 'pipeline', 'cuota', 'ingresos', 'relación con clientes', 'negociación', 'cierre']
+  };
+
+  private static readonly INDUSTRY_KEYWORDS_FR = {
+    tech: ['javascript', 'python', 'react', 'node.js', 'aws', 'docker', 'kubernetes', 'api', 'base de données', 'agile', 'scrum'],
+    marketing: ['seo', 'sem', 'analytique', 'campagne', 'conversion', 'roi', 'marque', 'réseaux sociaux', 'contenu', 'génération de leads'],
+    finance: ['analyse financière', 'budgétisation', 'prévision', 'excel', 'sql', 'gestion des risques', 'conformité', 'audit'],
+    healthcare: ['soins aux patients', 'médical', 'clinique', 'hipaa', 'emr', 'santé', 'diagnostic', 'traitement'],
+    sales: ['crm', 'génération de leads', 'pipeline', 'quota', 'revenus', 'relation client', 'négociation', 'clôture']
+  };
+
+  private static readonly INDUSTRY_KEYWORDS_DE = {
+    tech: ['javascript', 'python', 'react', 'node.js', 'aws', 'docker', 'kubernetes', 'api', 'datenbank', 'agil', 'scrum'],
+    marketing: ['seo', 'sem', 'analytik', 'kampagne', 'konversion', 'roi', 'marke', 'soziale medien', 'inhalt', 'lead-generierung'],
+    finance: ['finanzanalyse', 'budgetierung', 'prognose', 'excel', 'sql', 'risikomanagement', 'compliance', 'audit'],
+    healthcare: ['patientenversorgung', 'medizinisch', 'klinisch', 'hipaa', 'emr', 'gesundheitswesen', 'diagnose', 'behandlung'],
+    sales: ['crm', 'lead-generierung', 'pipeline', 'quote', 'einnahmen', 'kundenbeziehung', 'verhandlung', 'abschluss']
+  };
+
+  private static readonly POWER_WORDS_EN = [
     'achieved', 'improved', 'increased', 'decreased', 'developed', 'implemented', 'led', 'managed',
     'created', 'designed', 'optimized', 'streamlined', 'delivered', 'exceeded', 'spearheaded',
     'transformed', 'innovated', 'collaborated', 'mentored', 'established'
   ];
 
-  private static readonly WEAK_WORDS = [
+  private static readonly POWER_WORDS_ES = [
+    'logrado', 'mejorado', 'incrementado', 'disminuido', 'desarrollado', 'implementado', 'liderado', 'gestionado',
+    'creado', 'diseñado', 'optimizado', 'simplificado', 'entregado', 'superado', 'spearheaded',
+    'transformado', 'innovado', 'colaborado', 'mentoreado', 'establecido'
+  ];
+
+  private static readonly POWER_WORDS_FR = [
+    'réalisé', 'amélioré', 'augmenté', 'diminué', 'développé', 'implémenté', 'dirigé', 'géré',
+    'créé', 'conçu', 'optimisé', 'rationalisé', 'livré', 'dépassé', 'spearheaded',
+    'transformé', 'innové', 'collaboré', 'mentoré', 'établi'
+  ];
+
+  private static readonly POWER_WORDS_DE = [
+    'erreicht', 'verbessert', 'erhöht', 'verringert', 'entwickelt', 'implementiert', 'geführt', 'verwaltet',
+    'erstellt', 'entworfen', 'optimiert', 'vereinfacht', 'geliefert', 'übertroffen', 'spearheaded',
+    'transformiert', 'innovierte', 'zusammengearbeitet', 'mentoriert', 'etabliert'
+  ];
+
+  private static readonly WEAK_WORDS_EN = [
     'responsible for', 'worked on', 'helped with', 'assisted', 'participated', 'involved in',
     'duties included', 'tasks included', 'did', 'handled'
   ];
 
+  private static readonly WEAK_WORDS_ES = [
+    'responsable de', 'trabajé en', 'ayudé con', 'asistí', 'participé', 'involucrado en',
+    'deberes incluían', 'tareas incluían', 'hice', 'manejé'
+  ];
+
+  private static readonly WEAK_WORDS_FR = [
+    'responsable de', 'travaillé sur', 'aidé avec', 'assisté', 'participé', 'impliqué dans',
+    'devoirs inclus', 'tâches incluses', 'fait', 'géré'
+  ];
+
+  private static readonly WEAK_WORDS_DE = [
+    'verantwortlich für', 'arbeitete an', 'half mit', 'unterstützt', 'teilgenommen', 'beteiligt an',
+    'pflichten umfassten', 'aufgaben umfassten', 'tat', 'handhabte'
+  ];
+
+  // Map for language-specific constants
+  private static readonly KEYWORDS_BY_LANG = {
+    en: {
+      industry: CVAnalyzer.INDUSTRY_KEYWORDS_EN,
+      power: CVAnalyzer.POWER_WORDS_EN,
+      weak: CVAnalyzer.WEAK_WORDS_EN
+    },
+    es: {
+      industry: CVAnalyzer.INDUSTRY_KEYWORDS_ES,
+      power: CVAnalyzer.POWER_WORDS_ES,
+      weak: CVAnalyzer.WEAK_WORDS_ES
+    },
+    fr: {
+      industry: CVAnalyzer.INDUSTRY_KEYWORDS_FR,
+      power: CVAnalyzer.POWER_WORDS_FR,
+      weak: CVAnalyzer.WEAK_WORDS_FR
+    },
+    de: {
+      industry: CVAnalyzer.INDUSTRY_KEYWORDS_DE,
+      power: CVAnalyzer.POWER_WORDS_DE,
+      weak: CVAnalyzer.WEAK_WORDS_DE
+    }
+  };
+
   // Analyze summary section
-  static analyzeSummary(summary: string, context?: { industry?: string; level?: string }): CVAnalysis {
+  static analyzeSummary(summary: string, context?: { industry?: string; level?: string; language?: Language }): CVAnalysis {
     const analysis: CVAnalysis = {
       score: 0,
       strengths: [],
@@ -57,11 +141,13 @@ export class CVAnalyzer {
     let score = 50; // Base score
 
     // Check for power words
-    const powerWordCount = this.POWER_WORDS.filter(word => 
+    const lang = context?.language || Language.EN;
+    const keywords = this.KEYWORDS_BY_LANG[lang];
+    const powerWordCount = keywords.power.filter(word =>
       summary.toLowerCase().includes(word)
     ).length;
     
-    if (powerWordCount >= 3) {
+    if (powerWordCount >= 1) {
       score += 20;
       analysis.strengths.push('Uses strong action words');
     } else {
@@ -80,7 +166,7 @@ export class CVAnalyzer {
 
     // Check for industry relevance
     if (context?.industry) {
-      const industryKeywords = this.INDUSTRY_KEYWORDS[context.industry as keyof typeof this.INDUSTRY_KEYWORDS] || [];
+      const industryKeywords = keywords.industry[context.industry as keyof typeof keywords.industry] || [];
       const relevantKeywords = industryKeywords.filter(keyword =>
         summary.toLowerCase().includes(keyword.toLowerCase())
       );
@@ -94,14 +180,14 @@ export class CVAnalyzer {
     }
 
     // Generate improved summary
-    analysis.improvedContent = this.improveSummary(summary, context);
+    analysis.improvedContent = this.improveSummary(summary, context, lang);
     analysis.score = Math.min(score, 100);
 
     return analysis;
   }
 
   // Analyze experience section
-  static analyzeExperience(experiences: any[], context?: { industry?: string; level?: string }): CVAnalysis {
+  static analyzeExperience(experiences: any[], context?: { industry?: string; level?: string; language?: Language }): CVAnalysis {
     const analysis: CVAnalysis = {
       score: 0,
       strengths: [],
@@ -131,7 +217,9 @@ export class CVAnalyzer {
       }
 
       // Check for weak language
-      const hasWeakWords = this.WEAK_WORDS.some(word =>
+      const lang = context?.language || Language.EN;
+      const keywords = this.KEYWORDS_BY_LANG[lang];
+      const hasWeakWords = keywords.weak.some(word =>
         exp.description?.toLowerCase().includes(word)
       );
       
@@ -152,7 +240,7 @@ export class CVAnalyzer {
       }
 
       // Generate improved experience
-      const improvedExp = this.improveExperience(exp, context);
+      const improvedExp = this.improveExperience(exp, context, lang);
       improvedExperiences.push(improvedExp);
 
       totalScore += expScore;
@@ -165,7 +253,7 @@ export class CVAnalyzer {
   }
 
   // Analyze skills section
-  static analyzeSkills(skills: any[], context?: { industry?: string; level?: string }): CVAnalysis {
+  static analyzeSkills(skills: any[], context?: { industry?: string; level?: string; language?: Language }): CVAnalysis {
     const analysis: CVAnalysis = {
       score: 0,
       strengths: [],
@@ -192,7 +280,9 @@ export class CVAnalyzer {
 
     // Check for industry relevance
     if (context?.industry) {
-      const industryKeywords = this.INDUSTRY_KEYWORDS[context.industry as keyof typeof this.INDUSTRY_KEYWORDS] || [];
+      const lang = context?.language || Language.EN;
+      const keywords = this.KEYWORDS_BY_LANG[lang];
+      const industryKeywords = keywords.industry[context.industry as keyof typeof keywords.industry] || [];
       const relevantSkills = skills.filter(skill =>
         industryKeywords.some(keyword =>
           skill.name?.toLowerCase().includes(keyword.toLowerCase())
@@ -214,7 +304,7 @@ export class CVAnalyzer {
   }
 
   // Generate improved summary
-  private static improveSummary(summary: string, context?: { industry?: string; level?: string }): string {
+  private static improveSummary(summary: string, context?: { industry?: string; level?: string; language?: Language }): string {
     // This would use AI in production, for now we'll enhance with patterns
     let improved = summary;
 
@@ -241,7 +331,7 @@ export class CVAnalyzer {
   }
 
   // Generate improved experience entry
-  private static improveExperience(exp: any, context?: { industry?: string; level?: string }): any {
+  private static improveExperience(exp: any, context?: { industry?: string; level?: string; language?: Language }): any {
     const improved = { ...exp };
 
     if (exp.description) {
@@ -264,12 +354,14 @@ export class CVAnalyzer {
   }
 
   // Suggest additional skills
-  private static suggestAdditionalSkills(currentSkills: any[], context?: { industry?: string; level?: string }): string[] {
+  private static suggestAdditionalSkills(currentSkills: any[], context?: { industry?: string; level?: string; language?: Language }): string[] {
     const suggestions = [];
     const currentSkillNames = currentSkills.map(s => s.name?.toLowerCase() || '');
 
     if (context?.industry) {
-      const industryKeywords = this.INDUSTRY_KEYWORDS[context.industry as keyof typeof this.INDUSTRY_KEYWORDS] || [];
+      const lang = context?.language || Language.EN;
+      const keywords = this.KEYWORDS_BY_LANG[lang];
+      const industryKeywords = keywords.industry[context.industry as keyof typeof keywords.industry] || [];
       
       industryKeywords.forEach(keyword => {
         if (!currentSkillNames.some(skill => skill.includes(keyword.toLowerCase()))) {
@@ -290,7 +382,7 @@ export class CVAnalyzer {
   }
 
   // Overall CV analysis
-  static analyzeFullCV(cvData: any, context?: { industry?: string; level?: string; targetRole?: string }): {
+  static analyzeFullCV(cvData: any, context?: { industry?: string; level?: string; targetRole?: string; language?: Language }): {
     overallScore: number;
     sectionAnalyses: Record<string, CVAnalysis>;
     recommendations: string[];

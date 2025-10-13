@@ -1,19 +1,28 @@
 'use client';
 
-import { useSession } from "next-auth/react";
+import { useSession, getProviders } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SignInButton } from "@/components/auth/signin-button";
 
 export default function SignInPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  
+  const [providers, setProviders] = useState<any>(null);
+
   useEffect(() => {
     if (session) {
       router.push("/dashboard");
     }
   }, [session, router]);
+
+  useEffect(() => {
+    const fetchProviders = async () => {
+      const res = await getProviders();
+      setProviders(res);
+    };
+    fetchProviders();
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -24,7 +33,12 @@ export default function SignInPage() {
         </div>
         
         <div className="mt-8 space-y-6">
-          <SignInButton provider="github" className="transform transition-transform hover:scale-105" />
+          {providers?.github && (
+            <SignInButton provider="github" className="transform transition-transform hover:scale-105" />
+          )}
+          {providers?.google && (
+            <SignInButton provider="google" className="transform transition-transform hover:scale-105 mt-4" />
+          )}
           
           <div className="relative mt-8">
             <div className="absolute inset-0 flex items-center">

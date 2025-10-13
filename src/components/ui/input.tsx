@@ -76,7 +76,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               'text-gray-900 dark:text-gray-100',
               'bg-white dark:bg-gray-800',
               'ring-1 ring-inset',
-              'focus:ring-2 focus:ring-inset',
+              'focus:ring-2 focus:ring-inset focus:ring-indigo-500',
               'placeholder:text-gray-400 dark:placeholder:text-gray-500',
               'sm:text-sm sm:leading-6',
               'transition-colors duration-200',

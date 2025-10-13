@@ -1,5 +1,6 @@
 import type { DefaultSession } from 'next-auth';
 import type { AuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {

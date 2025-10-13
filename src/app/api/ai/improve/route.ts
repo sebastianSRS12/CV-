@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { CVAnalyzer } from '@/lib/ai/cv-analyzer';
+import { Language, detectLanguage } from '@/lib/ai/language-utils';
 
 // Industry detection based on CV content
 function detectIndustry(cvData: any): string {
@@ -66,7 +67,7 @@ function detectExperienceLevel(cvData: any): 'entry' | 'mid' | 'senior' | 'execu
 
 export async function POST(request: Request) {
   try {
-    const { cvData, section, targetRole } = await request.json();
+    const { cvData, section, targetRole, language } = await request.json();
 
     // Simulate AI processing delay
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -74,11 +75,13 @@ export async function POST(request: Request) {
     // Detect context automatically
     const industry = detectIndustry(cvData);
     const level = detectExperienceLevel(cvData);
-    
+    const detectedLanguage = language ? Language[language.toUpperCase() as keyof typeof Language] : detectLanguage(JSON.stringify(cvData.content));
+
     const context = {
       industry,
       level,
-      targetRole: targetRole || 'Software Developer'
+      targetRole: targetRole || 'Software Developer',
+      language: detectedLanguage
     };
 
     let analysis;

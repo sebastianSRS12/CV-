@@ -27,9 +27,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseClasses = [
       'inline-flex items-center justify-center',
       'font-medium rounded-md transition-all',
-      'focus:outline-none focus:ring-2 focus:ring-offset-2',
+      'focus:outline-none focus:ring-2 focus:ring-offset-2 focus-visible:outline-none',
       'disabled:opacity-60 disabled:cursor-not-allowed',
       'dark:focus:ring-offset-gray-900',
+      'bg-neutral-200 text-neutral-900 border border-neutral-300',
       fullWidth ? 'w-full' : '',
     ];
     
