@@ -4,6 +4,8 @@ import { useSession, getProviders } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SignInButton } from "@/components/auth/signin-button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function SignInPage() {
   const { data: session } = useSession();
@@ -49,12 +51,13 @@ export default function SignInPage() {
             </div>
           </div>
           
-          <button 
+          <Button
             onClick={() => router.push('/dashboard')}
+            aria-label="Continue as guest"
             className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
           >
             Continue without signing in
-          </button>
+          </Button>
           
           <form 
             action="/api/auth/signin/credentials" 
@@ -64,7 +67,7 @@ export default function SignInPage() {
             <input name="csrfToken" type="hidden" defaultValue="" />
             <div>
               <label htmlFor="email" className="sr-only">Email address</label>
-              <input
+              <Input
                 id="email"
                 name="email"
                 type="email"
@@ -77,7 +80,7 @@ export default function SignInPage() {
             </div>
             <div>
               <label htmlFor="name" className="sr-only">Name</label>
-              <input
+              <Input
                 id="name"
                 name="name"
                 type="text"
@@ -87,12 +90,12 @@ export default function SignInPage() {
                 defaultValue="Demo User"
               />
             </div>
-            <button
+            <Button
               type="submit"
               className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
             >
               Sign in with Demo Account
-            </button>
+            </Button>
           </form>
         </div>
       </div>

@@ -14,7 +14,9 @@ export function Header() {
   }
 
   return (
-    <header className="bg-white shadow-sm">
+    <>
+      <a href="#main" className="sr-only focus:not-sr-only">Skip to main content</a>
+      <header className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -24,6 +26,7 @@ export function Header() {
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
                 href="/templates"
+                aria-current={pathname === '/templates' ? 'page' : undefined}
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                   pathname === '/templates'
                     ? 'border-primary-500 text-gray-900'
@@ -34,6 +37,7 @@ export function Header() {
               </Link>
               <Link
                 href="/cover-letter/drafts"
+                aria-current={pathname.startsWith('/cover-letter') ? 'page' : undefined}
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                   pathname.startsWith('/cover-letter')
                     ? 'border-primary-500 text-gray-900'
@@ -45,6 +49,7 @@ export function Header() {
               {session && (
                 <Link
                   href="/dashboard"
+                  aria-current={pathname === '/dashboard' ? 'page' : undefined}
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                     pathname === '/dashboard'
                       ? 'border-primary-500 text-gray-900'

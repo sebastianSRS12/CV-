@@ -438,12 +438,13 @@ const EditCVPage = () => {
         <div className="p-8 text-center">
           <div className="text-2xl font-semibold mb-4">CV Not Found</div>
           <p className="text-gray-600 dark:text-gray-300 mb-4">The requested CV could not be found or you don't have permission to view it.</p>
-          <button
+          <Button
             onClick={() => router.push('/dashboard')}
+            aria-label="Go back to dashboard"
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             Back to Dashboard
-          </button>
+          </Button>
         </div>
       </EditorLayout>
     );
@@ -486,25 +487,27 @@ const EditCVPage = () => {
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 bg-black/20 backdrop-blur-md rounded-2xl p-6 border border-white/10"
         >
           <div className="flex items-center space-x-4">
-            <button
+            <Button
               onClick={() => router.back()}
+              aria-label="Go back to previous page"
               className="inline-flex items-center px-4 py-2 text-sm font-medium text-white rounded-md hover:bg-white/10 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back
-            </button>
+            </Button>
           </div>
           
           <div className="flex items-center space-x-4 mt-4 lg:mt-0">
             <div className="flex items-center space-x-2">
               <AutoSaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
-              <button
+              <Button
                 onClick={manualSave}
                 disabled={isSaving}
+                aria-label="Save CV changes"
                 className="px-3 py-1 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
                 {isSaving ? 'Saving...' : 'Save'}
-              </button>
+              </Button>
             </div>
             
             <motion.button
@@ -512,6 +515,7 @@ const EditCVPage = () => {
               disabled={isExporting}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
+              aria-label="Export CV as PDF"
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all"
             >
               {isExporting ? (
@@ -541,9 +545,12 @@ const EditCVPage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
+                  aria-selected={activeTab === tab.id}
+                  role="tab"
+                  aria-controls={`tabpanel-${tab.id}`}
                   className={`relative px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    activeTab === tab.id 
-                      ? 'text-white' 
+                    activeTab === tab.id
+                      ? 'text-white'
                       : 'text-white/70 hover:text-white/90 hover:bg-white/5'
                   }`}
                 >

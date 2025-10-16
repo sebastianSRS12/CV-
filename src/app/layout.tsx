@@ -18,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning={true}>
+        <a href="#main" className="sr-only focus:not-sr-only">Skip to main content</a>
         <ClientLayout>
           {children}
         </ClientLayout>

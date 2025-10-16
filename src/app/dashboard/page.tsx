@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
+  const router = useRouter();
 
   // In a real app, you would fetch the user's CVs from the database here
   const userCVs = [];
@@ -10,16 +15,17 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My CVs</h1>
-          <Link
-            href="/cv/new"
+          <Button
+            onClick={() => router.push('/cv/new')}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            aria-label="Create New CV"
           >
             Create New CV
-          </Link>
+          </Button>
         </div>
 
         {userCVs.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div role="region" aria-labelledby="empty-state-title" className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <svg
               className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
               fill="none"
@@ -33,14 +39,15 @@ export default function DashboardPage() {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No CVs yet</h3>
+            <h3 id="empty-state-title" className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No CVs yet</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Get started by creating a new CV.
             </p>
             <div className="mt-6">
-              <Link
-                href="/cv/new"
+              <Button
+                onClick={() => router.push('/cv/new')}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                aria-label="Create New CV"
               >
                 <svg
                   className="-ml-1 mr-2 h-5 w-5"
@@ -56,7 +63,7 @@ export default function DashboardPage() {
                   />
                 </svg>
                 New CV
-              </Link>
+              </Button>
             </div>
           </div>
         ) : (

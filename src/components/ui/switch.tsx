@@ -2,6 +2,8 @@ import * as React from 'react';
 import { cn } from '@/lib/utils/cn';
 
 export interface SwitchProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Optional aria-label for the switch */
+  'aria-label'?: string;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   disabled?: boolean;
@@ -46,6 +48,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({
       type="button"
       aria-checked={isChecked}
       disabled={disabled}
+      aria-label={props['aria-label']}
       className={cn(
         'group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors',
         'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 hover:bg-primary-500',

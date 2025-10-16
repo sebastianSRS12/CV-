@@ -37,11 +37,18 @@ export default function ClientLayout({
                 >
                   Templates
                 </Link>
-                <Link 
-                  href="/about" 
+                <Link
+                  href="/about"
                   className="text-gray-600 hover:text-indigo-600 transition-colors"
                 >
                   About
+                </Link>
+                <Link
+                  href="/settings"
+                  aria-current={window.location.pathname === '/settings' ? 'page' : undefined}
+                  className="text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Settings
                 </Link>
                 <Link 
                   href="/privacy" 

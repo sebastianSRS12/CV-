@@ -2,6 +2,8 @@ import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Optional aria-label for icon‑only buttons */
+  'aria-label'?: string;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'link';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
@@ -104,6 +106,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             fill="none"
             viewBox="0 0 24 24"
             aria-hidden="true"
+            role="img"
+            aria-label="Loading"
           >
             <circle
               className="opacity-25"

@@ -158,7 +158,7 @@ export default function EditCoverLetterPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Draft not found</p>
-          <Button onClick={() => router.push('/cover-letter/drafts')} className="mt-4">
+          <Button onClick={() => router.push('/cover-letter/drafts')} className="mt-4" aria-label="Go back to cover letter drafts">
             Back to Drafts
           </Button>
         </div>
@@ -175,7 +175,7 @@ export default function EditCoverLetterPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={() => router.push('/cover-letter/drafts')}>
+              <Button variant="outline" onClick={() => router.push('/cover-letter/drafts')} aria-label="Go back to cover letter drafts">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Drafts
               </Button>
@@ -185,7 +185,7 @@ export default function EditCoverLetterPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handleGeneratePreview} disabled={generating}>
+              <Button variant="outline" onClick={handleGeneratePreview} disabled={generating} aria-label="Generate cover letter preview">
                 {generating ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
@@ -193,11 +193,11 @@ export default function EditCoverLetterPage() {
                 )}
                 Preview
               </Button>
-              <Button variant="outline" onClick={handleDownloadPDF}>
+              <Button variant="outline" onClick={handleDownloadPDF} aria-label="Download cover letter as PDF">
                 <Download className="w-4 h-4 mr-2" />
                 Download PDF
               </Button>
-              <Button onClick={handleSaveDraft} disabled={saving}>
+              <Button onClick={handleSaveDraft} disabled={saving} aria-label="Save cover letter draft">
                 {saving ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
@@ -261,15 +261,15 @@ export default function EditCoverLetterPage() {
 
         {/* Footer Actions */}
         <div className="mt-8 flex justify-between">
-          <Button variant="outline" onClick={() => router.push('/cover-letter/drafts')}>
+          <Button variant="outline" onClick={() => router.push('/cover-letter/drafts')} aria-label="Cancel and go back to drafts">
             Cancel
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleDownloadPDF}>
+            <Button variant="outline" onClick={handleDownloadPDF} aria-label="Download cover letter as PDF">
               <Download className="w-4 h-4 mr-2" />
               Download PDF
             </Button>
-            <Button onClick={handleSaveDraft} disabled={saving}>
+            <Button onClick={handleSaveDraft} disabled={saving} aria-label="Save cover letter changes">
               {saving ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
