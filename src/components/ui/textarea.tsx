@@ -98,7 +98,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
               'resize-y min-h-[100px]',
               hasError
                 ? 'ring-red-300 focus:ring-red-500 text-red-900 dark:ring-red-700 dark:focus:ring-red-500 dark:text-red-100'
-                : 'ring-gray-300 dark:ring-gray-600 focus:ring-indigo-600 dark:focus:ring-indigo-500',
+                : 'ring-gray-300 dark:ring-gray-600 focus:ring-primary-600 dark:focus:ring-primary-500',
               textareaClassName,
               className
             )}

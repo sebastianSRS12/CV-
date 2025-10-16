@@ -91,19 +91,19 @@ const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
       default: cn(
         'border-b-2 font-medium',
         isActive
-          ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
+          ? 'border-primary-500 text-primary-600 dark:border-primary-400 dark:text-primary-300'
           : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
       ),
       pills: cn(
         'rounded-full font-medium',
         isActive
-          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+          ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
           : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
       ),
       underline: cn(
         'border-b-2 font-medium',
         isActive
-          ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
+          ? 'border-primary-500 text-primary-600 dark:border-primary-400 dark:text-primary-300'
           : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
       ),
     };
@@ -117,7 +117,7 @@ const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
         className={cn(
           'inline-flex items-center justify-center whitespace-nowrap',
           'transition-colors focus:outline-none disabled:pointer-events-none disabled:opacity-50',
-          'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500',
+          'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500',
           'dark:focus-visible:ring-offset-gray-900',
           sizeClasses[size],
           variantClasses[variant],

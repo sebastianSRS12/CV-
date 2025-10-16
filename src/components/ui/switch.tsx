@@ -48,9 +48,9 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(({
       disabled={disabled}
       className={cn(
         'group relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors',
-        'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 hover:bg-indigo-500',
+        'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 hover:bg-primary-500',
         'disabled:cursor-not-allowed disabled:opacity-50',
-        isChecked ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700',
+        isChecked ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700',
         className
       )}
       onClick={toggle}

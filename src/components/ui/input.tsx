@@ -76,7 +76,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               'text-gray-900 dark:text-gray-100',
               'bg-white dark:bg-gray-800',
               'ring-1 ring-inset',
-              'focus:ring-2 focus:ring-inset focus:ring-indigo-500',
+              'focus:ring-2 focus:ring-inset focus:ring-primary-500',
               'placeholder:text-gray-400 dark:placeholder:text-gray-500',
               'sm:text-sm sm:leading-6',
               'transition-colors duration-200',
@@ -85,7 +85,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               rightIcon ? 'pr-10' : 'pr-3',
               hasError
                 ? 'ring-red-300 focus:ring-red-500 text-red-900 dark:ring-red-700 dark:focus:ring-red-500 dark:text-red-100'
-                : 'ring-gray-300 dark:ring-gray-600 focus:ring-indigo-600 dark:focus:ring-indigo-500',
+                : 'ring-gray-300 dark:ring-gray-600 focus:ring-primary-600 dark:focus:ring-primary-500',
               inputClassName,
               className
             )}

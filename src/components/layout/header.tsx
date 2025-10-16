@@ -19,25 +19,35 @@ export function Header() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold text-indigo-600">CV Builder Pro</span>
+              <span className="text-2xl font-bold text-primary-600">CV Builder Pro</span>
             </Link>
             <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
                 href="/templates"
                 className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                   pathname === '/templates'
-                    ? 'border-indigo-500 text-gray-900'
+                    ? 'border-primary-500 text-gray-900'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }`}
               >
                 Templates
+              </Link>
+              <Link
+                href="/cover-letter/drafts"
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  pathname.startsWith('/cover-letter')
+                    ? 'border-primary-500 text-gray-900'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                }`}
+              >
+                Cover Letters
               </Link>
               {session && (
                 <Link
                   href="/dashboard"
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                     pathname === '/dashboard'
-                      ? 'border-indigo-500 text-gray-900'
+                      ? 'border-primary-500 text-gray-900'
                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                   }`}
                 >
@@ -51,13 +61,13 @@ export function Header() {
               <div className="relative">
                 <button
                   type="button"
-                  className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                   id="user-menu"
                   aria-expanded="false"
                   aria-haspopup="true"
                 >
                   <span className="sr-only">Open user menu</span>
-                  <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
+                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-medium">
                     {session.user?.name?.[0] || session.user?.email?.[0] || 'U'}
                   </div>
                 </button>
@@ -79,7 +89,7 @@ export function Header() {
             ) : (
               <Link
                 href="/auth/signin"
-                className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                className="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary-600 hover:bg-primary-700"
               >
                 Sign in
               </Link>

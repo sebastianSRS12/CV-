@@ -37,9 +37,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Variant styles
     const variants = {
       primary: [
-        'bg-indigo-600 text-white',
-        'hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600',
-        'focus:ring-indigo-500 dark:ring-offset-gray-900',
+        'bg-primary-600 text-white',
+        'hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600',
+        'focus:ring-primary-500 dark:ring-offset-gray-900',
         'shadow-sm hover:shadow-md',
       ],
       secondary: [
@@ -51,13 +51,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       outline: [
         'border border-gray-300 bg-white text-gray-700',
         'hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200',
-        'focus:ring-indigo-500 dark:ring-offset-gray-900',
+        'focus:ring-primary-500 dark:ring-offset-gray-900',
         'shadow-sm',
       ],
       ghost: [
         'text-gray-700 hover:bg-gray-100',
         'dark:text-gray-200 dark:hover:bg-gray-800',
-        'focus:ring-indigo-500 dark:ring-offset-gray-900',
+        'focus:ring-primary-500 dark:ring-offset-gray-900',
       ],
       danger: [
         'bg-red-600 text-white',
@@ -66,8 +66,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         'shadow-sm hover:shadow-md',
       ],
       link: [
-        'text-indigo-600 hover:text-indigo-800',
-        'dark:text-indigo-400 dark:hover:text-indigo-300',
+        'text-primary-600 hover:text-primary-800',
+        'dark:text-primary-400 dark:hover:text-primary-300',
         'underline-offset-4 hover:underline',
         'focus:ring-0 focus:ring-offset-0',
       ],

@@ -122,6 +122,75 @@ export class PDFGenerator {
     this.pdf.save(filename)
   }
 
+  // Generate PDF from cover letter HTML string
+  async generateFromCoverLetterHTML(htmlContent: string, filename: string = 'cover-letter.pdf'): Promise<void> {
+    // Create a temporary div to hold the HTML content
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = htmlContent
+    tempDiv.style.position = 'absolute'
+    tempDiv.style.left = '-9999px'
+    tempDiv.style.top = '0'
+    tempDiv.style.width = '210mm' // A4 width
+    tempDiv.style.backgroundColor = 'white'
+    tempDiv.style.fontFamily = 'serif' // Default serif for cover letters
+
+    // Ensure proper styling for PDF generation
+    const style = document.createElement('style')
+    style.textContent = `
+      body {
+        margin: 20mm;
+        line-height: 1.4;
+        font-size: 14px;
+        color: #1f2937;
+      }
+      .header { text-align: right; margin-bottom: 1.5rem; }
+      .date { text-align: right; margin-bottom: 1.5rem; }
+      .salutation { margin-bottom: 1rem; }
+      .paragraph { margin-bottom: 1rem; text-align: justify; }
+      .signature { margin-top: 2rem; }
+      .signature-name { font-weight: 600; }
+    `
+    tempDiv.appendChild(style)
+
+    document.body.appendChild(tempDiv)
+
+    try {
+      // Configure html2canvas for cover letter
+      const canvas = await html2canvas(tempDiv, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: 794, // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
+      })
+
+      const imgData = canvas.toDataURL('image/png')
+      const imgWidth = this.pageWidth - (this.margin * 2)
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+      // Handle multiple pages if content is long
+      let heightLeft = imgHeight
+      let position = 0
+
+      this.pdf.addImage(imgData, 'PNG', this.margin, this.margin, imgWidth, imgHeight)
+      heightLeft -= this.pageHeight - (this.margin * 2)
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight
+        this.pdf.addPage()
+        this.pdf.addImage(imgData, 'PNG', this.margin, position + this.margin, imgWidth, imgHeight)
+        heightLeft -= this.pageHeight - (this.margin * 2)
+      }
+
+      this.pdf.save(filename)
+    } finally {
+      // Clean up the temporary element
+      document.body.removeChild(tempDiv)
+    }
+  }
+
   // Modern template with accent colors
   private generateModernTemplate(cvData: CVData): void {
     this.setColors('modern')
@@ -441,4 +510,10 @@ export const exportToPDF = async (cvData: CVData, template: 'modern' | 'classic'
 export const exportHTMLToPDF = async (elementId: string, filename?: string): Promise<void> => {
   const generator = new PDFGenerator()
   await generator.generateFromHTML(elementId, filename)
+}
+
+// Export utility functions for cover letters
+export const exportCoverLetterToPDF = async (htmlContent: string, filename: string = 'cover-letter.pdf'): Promise<void> => {
+  const generator = new PDFGenerator()
+  await generator.generateFromCoverLetterHTML(htmlContent, filename)
 }
